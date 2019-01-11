@@ -1,9 +1,11 @@
+use std::fs;
+
 struct VM {
     opcode: u8,         // 1 byte opcodes
-    memory: [u8; 4096], // 4KB of memory == 4096 Bytes
+    memory: [u8; 4096], // 4KB of memory == 4096 bytes
     v: [u8; 16],        // 16 8-bit registries (from V0 to VE)
-    i: u8,              // Index Register, 8 bit
-    pc: u8,             // Program counter, 8 bit
+    i: u16,             // Index Register, 2 bytes
+    pc: u16,            // Program counter, 2 bytes
     stack: [u8; 16],    // Stack
     sp: u8,             // Stack Pointer
     key: [u8; 16],      // 1 byte for each input direction + controls
@@ -16,11 +18,11 @@ struct VM {
 impl VM {
     fn initialize() -> VM {
         VM {
-            opcode: 0x00,
+            pc: 0x200,
+            opcode: 0,
             memory: [0; 4096],
             v: [0; 16],
             i: 0,
-            pc: 0,
             stack: [0; 16],
             sp: 0,
             key: [0; 16],
@@ -31,8 +33,29 @@ impl VM {
         }
     }
 
-    fn load_game(&self, game: String) {
-        // Load binary into memory
+    fn load_game(&mut self, path: String) {
+        let buffer = fs::read(path).unwrap();
+
+        for i in 0..buffer.len() {
+            self.memory[512 + i] = buffer[i];
+        }
+    }
+
+    fn debug_memory(&self) {
+        for i in (0..self.memory.len()).step_by(16) {
+            println!(
+                "0x{:02X} | {:02X}{:02X} {:02X}{:02X} {:02X}{:02X} {:02X}{:02X}",
+                i,
+                self.memory[i],
+                self.memory[i + 1],
+                self.memory[i + 2],
+                self.memory[i + 3],
+                self.memory[i + 4],
+                self.memory[i + 5],
+                self.memory[i + 6],
+                self.memory[i + 7],
+            );
+        }
     }
 
     fn emulate_cycle(&self) {
@@ -50,12 +73,13 @@ impl VM {
 }
 
 fn main() {
-    let vm = VM::initialize();
+    let mut vm = VM::initialize();
 
     setup_graphics();
     setup_input();
 
-    vm.load_game(String::from("pong"));
+    vm.load_game(String::from("pong.rom"));
+    vm.debug_memory();
 
     loop {
         vm.emulate_cycle();
