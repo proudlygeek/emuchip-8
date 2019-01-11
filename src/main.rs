@@ -67,7 +67,7 @@ impl VM {
 
         println!("Opcode: {:X}", self.opcode);
 
-        // Decode Opcode
+        // Decode and Execute Opcode
         match self.opcode & 0xF000 {
             0x6000 => self.self_vx_to_value(
                 ((self.opcode & 0x0F00) >> 8) as u8,
@@ -75,8 +75,6 @@ impl VM {
             ),
             v => println!("Opcode not handled: {:X}", v),
         }
-
-        // Execute Opcode
 
         // Update timers
     }
