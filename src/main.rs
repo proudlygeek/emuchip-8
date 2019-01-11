@@ -69,6 +69,10 @@ impl VM {
 
         // Decode Opcode
         match self.opcode & 0xF000 {
+            0x6000 => self.self_vx_to_value(
+                ((self.opcode & 0x0F00) >> 8) as u8,
+                (self.opcode & 0x00FF) as u8,
+            ),
             v => println!("Opcode not handled: {:X}", v),
         }
 
@@ -79,6 +83,12 @@ impl VM {
 
     fn set_keys(&self) {
         // Store key press state (Press and Release)
+    }
+
+    fn self_vx_to_value(&mut self, v: u8, value: u8) {
+        println!("Assign V{} = {:X}", v, value);
+        self.v[v as usize] = value;
+        self.pc += 2;
     }
 }
 
