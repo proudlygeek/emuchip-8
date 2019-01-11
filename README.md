@@ -1,4 +1,6 @@
-# EmuChip-8: A Chip-8 Emulator 🤖
+# EmuChip-8 🤖
+
+_A Chip-8 emulator_
 
 Also: my first Rust project :smile:
 
