@@ -3,8 +3,8 @@ use std::fs;
 struct VM {
     opcode: u8,         // 1 byte opcodes
     memory: [u8; 4096], // 4KB of memory == 4096 bytes
-    v: [u8; 16],        // 16 8-bit registries (from V0 to VE)
-    i: u16,             // Index Register, 2 bytes
+    v: [u8; 16],        // 16 8-bit registers (from V0 to VE)
+    i: u16,             // Index register, 2 bytes
     pc: u16,            // Program counter, 2 bytes
     stack: [u8; 16],    // Stack
     sp: u8,             // Stack Pointer
