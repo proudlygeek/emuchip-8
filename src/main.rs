@@ -1,7 +1,7 @@
 use std::fs;
 
 struct VM {
-    opcode: u8,         // 1 byte opcodes
+    opcode: u16,        // 2 bytes opcodes
     memory: [u8; 4096], // 4KB of memory == 4096 bytes
     v: [u8; 16],        // 16 8-bit registers (from V0 to VE)
     i: u16,             // Index register, 2 bytes
@@ -58,10 +58,20 @@ impl VM {
         }
     }
 
-    fn emulate_cycle(&self) {
-        // Emulate machine cycle
+    fn emulate_cycle(&mut self) {
         // Fetch Opcode
+        // -----------
+        // Left bitshift + bitwise or = merge two bytes
+        self.opcode = ((self.memory[self.pc as usize] as u16) << 8)
+            | (self.memory[self.pc as usize + 1]) as u16;
+
+        println!("Opcode: {:X}", self.opcode);
+
         // Decode Opcode
+        match self.opcode & 0xF000 {
+            v => println!("Opcode not handled: {:X}", v),
+        }
+
         // Execute Opcode
 
         // Update timers
@@ -79,7 +89,7 @@ fn main() {
     setup_input();
 
     vm.load_game(String::from("pong.rom"));
-    vm.debug_memory();
+    // vm.debug_memory();
 
     loop {
         vm.emulate_cycle();
