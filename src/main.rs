@@ -1,3 +1,4 @@
+use std::env;
 use std::fs;
 
 struct VM {
@@ -13,10 +14,11 @@ struct VM {
     delay_timer: u8,    // Timer for events
     sound_timer: u8,    // Timer for emitting sounds. When zero, sound is emitted
     draw_flag: bool,    // Flush graphic
+    debug: bool,        // Debug mode
 }
 
 impl VM {
-    fn initialize() -> VM {
+    fn initialize(debug: bool) -> VM {
         VM {
             pc: 0x200,
             opcode: 0,
@@ -30,6 +32,7 @@ impl VM {
             delay_timer: 0,
             sound_timer: 0xFF,
             draw_flag: false,
+            debug: debug,
         }
     }
 
@@ -235,14 +238,24 @@ impl VM {
     }
 
     fn unsupported_opcode(&self) {
-        // self.debug_memory();
-        // self.debug_registers();
+        if self.debug {
+            self.debug_memory();
+            self.debug_registers();
+        }
+
         panic!("Opcode not handled: 0x{:04X}", self.opcode);
     }
 }
 
 fn main() {
-    let mut vm = VM::initialize();
+    let args: Vec<String> = env::args().collect();
+    let mut debug = false;
+
+    if args.len() > 1 {
+        debug = args[1] == "--debug";
+    }
+
+    let mut vm = VM::initialize(debug);
 
     setup_graphics();
     setup_input();
