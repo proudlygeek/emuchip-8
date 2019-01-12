@@ -90,6 +90,7 @@ impl VM {
 
         println!("I: {:X}", self.i);
         println!("pc: 0x{:02X}", self.pc);
+        println!("s[sp]: 0x{:02X}", self.stack[self.sp as usize]);
     }
 
     fn emulate_cycle(&mut self) {
@@ -99,7 +100,7 @@ impl VM {
         self.opcode = ((self.memory[self.pc as usize] as u16) << 8)
             | (self.memory[self.pc as usize + 1]) as u16;
 
-        println!("Opcode: {:X}", self.opcode);
+        println!("Opcode: 0x{:04X}", self.opcode);
 
         let op_1 = (self.opcode & 0xF000) >> 12;
         let op_2 = (self.opcode & 0x0F00) >> 8;
@@ -130,7 +131,7 @@ impl VM {
     fn ret(&mut self) {
         println!("RET\n");
         self.sp -= 1;
-        self.pc = self.stack[self.sp as usize];
+        self.pc = self.stack[self.sp as usize] + 2;
     }
 
     fn call_addr(&mut self) {
