@@ -87,6 +87,7 @@ impl VM {
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
+            (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
             _ => self.unsupported_opcode(),
         }
 
@@ -115,6 +116,18 @@ impl VM {
         self.memory[self.i as usize] = self.v[vx as usize] / 100;
         self.memory[(self.i + 1) as usize] = (self.v[vx as usize] / 10) % 10;
         self.memory[(self.i + 2) as usize] = (self.v[vx as usize] % 100) % 10;
+
+        self.pc += 2;
+    }
+
+    fn ld_vx_i(&mut self) {
+        let vx = (self.opcode & 0x0F00) >> 8;
+
+        println!("LD V{}, [I]", vx);
+
+        for v in 0..vx {
+            self.v[v as usize] = self.memory[(self.i + v) as usize];
+        }
 
         self.pc += 2;
     }
