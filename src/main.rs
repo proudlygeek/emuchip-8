@@ -129,8 +129,8 @@ impl VM {
 
     fn ret(&mut self) {
         println!("RET\n");
-        self.pc = self.stack[self.sp as usize];
         self.sp -= 1;
+        self.pc = self.stack[self.sp as usize];
     }
 
     fn call_addr(&mut self) {
