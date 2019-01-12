@@ -109,6 +109,7 @@ impl VM {
         match (op_1, op_2, op_3, op_4) {
             (0x2, _, _, _) => self.call_addr(),
             (0x6, _, _, _) => self.ld_vx_byte(),
+            (0x7, _, _, _) => self.add_vx_byte(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
@@ -177,6 +178,16 @@ impl VM {
         self.pc += 2;
     }
 
+    fn add_vx_byte(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let byte = (self.opcode & 0x00FF) as u8;
+
+        println!("ADD V{}, {:X}", x, byte);
+
+        self.v[x as usize] = self.v[x as usize] + byte;
+        self.pc += 2;
+    }
+
     fn ld_i_addr(&mut self) {
         let value = self.opcode & 0x0FFF;
 
@@ -216,8 +227,8 @@ impl VM {
     }
 
     fn unsupported_opcode(&self) {
-        self.debug_memory();
-        self.debug_registers();
+        // self.debug_memory();
+        // self.debug_registers();
         panic!("Opcode not handled: {:X}", self.opcode);
     }
 }
