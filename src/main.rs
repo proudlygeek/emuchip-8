@@ -58,6 +58,14 @@ impl VM {
         }
     }
 
+    fn debug_registers(&self) {
+        for i in 0..16 {
+            println!("V{:X}: {:X}", i, self.v[i as usize]);
+        }
+
+        println!("I: {:X}", self.i);
+    }
+
     fn emulate_cycle(&mut self) {
         // Fetch Opcode
         // -----------
@@ -69,17 +77,10 @@ impl VM {
 
         // Decode and Execute Opcode
         match self.opcode & 0xF000 {
-            0x6000 => self.set_vx_to_value(
-                ((self.opcode & 0x0F00) >> 8) as u8,
-                (self.opcode & 0x00FF) as u8,
-            ),
-            0xA000 => self.set_i_to_address(self.opcode & 0x0FFF),
-            0xD000 => self.draw_sprite_vx_vy(
-                ((self.opcode & 0x0F00) >> 8) as u8,
-                ((self.opcode & 0x00F0) >> 4) as u8,
-                (self.opcode & 0x000F) as u8,
-            ),
-            v => panic!("Opcode not handled: {:X}", v),
+            0x6000 => self.set_vx_to_value(),
+            0xA000 => self.set_i_to_address(),
+            0xD000 => self.draw_sprite_vx_vy_n(),
+            v => self.unsupported_opcode(v),
         }
 
         // Update timers
@@ -89,38 +90,58 @@ impl VM {
         // Store key press state (Press and Release)
     }
 
-    fn set_vx_to_value(&mut self, v: u8, value: u8) {
+    fn set_vx_to_value(&mut self) {
+        let v = (self.opcode & 0x0F00) >> 8;
+        let value = (self.opcode & 0x00FF) as u8;
+
         println!("Assign V{} = {:X}\n", v, value);
+
         self.v[v as usize] = value;
         self.pc += 2;
     }
 
-    fn set_i_to_address(&mut self, value: u16) {
+    fn set_i_to_address(&mut self) {
+        let value = self.opcode & 0x0FFF;
+
         println!("MEM I = {:X}\n", value);
         self.i = value;
         self.pc += 2;
     }
 
-    fn draw_sprite_vx_vy(&mut self, x: u8, y: u8, height: u8) {
-        println!("draw(V{},V{},{})\n", x, y, height);
+    fn draw_sprite_vx_vy_n(&mut self) {
+        let vx = self.v[((self.opcode & 0x0F00) >> 8) as usize];
+        let vy = self.v[((self.opcode & 0x00F0) >> 4) as usize];
+        let rows = self.opcode & 0x000F;
+
+        println!("draw(V{},V{},{})\n", vx, vy, rows);
+
         self.v[0xF] = 0; // Reset register VF
 
-        for yline in 0..height {
-            let pixel = self.memory[(self.i + yline as u16) as usize];
+        for y in 0..rows {
+            let pixel = self.memory[(self.i + y) as usize];
 
-            for xline in 0..8 {
-                if (pixel & (0x80 >> xline)) != 0 {
-                    if self.gfx[(x + xline + ((y + yline) * 64)) as usize] == 1 {
+            for x in 0..8 {
+                if (pixel & (0x80 >> x)) != 0 {
+                    let current_position =
+                        ((vx as u16 + x as u16) + ((vy as u16 + y) * 64)) % (32 * 64);
+
+                    if self.gfx[current_position as usize] == 1 {
                         self.v[0xF] = 1; // Collision detected, set register VF
                     }
 
-                    self.gfx[(x + xline + ((y + yline) * 64)) as usize] ^= 1; // Set pixel value using XOR
+                    self.gfx[current_position as usize] ^= 1; // Set pixel value using XOR
                 }
             }
         }
 
         self.draw_flag = true;
         self.pc += 2;
+    }
+
+    fn unsupported_opcode(&self, v: u16) {
+        self.debug_memory();
+        self.debug_registers();
+        panic!("Opcode not handled: {:X}", v);
     }
 }
 
@@ -131,7 +152,6 @@ fn main() {
     setup_input();
 
     vm.load_game(String::from("pong.rom"));
-    // vm.debug_memory();
 
     loop {
         vm.emulate_cycle();
