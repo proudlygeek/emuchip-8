@@ -41,6 +41,31 @@ impl VM {
         }
     }
 
+    fn load_fontset(&mut self) {
+        let fontset: [u8; 80] = [
+            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+            0x20, 0x60, 0x20, 0x20, 0x70, // 1
+            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+            0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+        ];
+
+        for i in 0..80 {
+            self.memory[i] = fontset[i];
+        }
+    }
+
     fn debug_memory(&self) {
         for i in (0..self.memory.len()).step_by(16) {
             println!(
@@ -86,6 +111,7 @@ impl VM {
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
             (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
             _ => self.unsupported_opcode(),
@@ -106,6 +132,15 @@ impl VM {
         self.stack[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = subroutine_address;
+    }
+
+    fn ld_f_vx(&mut self) {
+        let vx = (self.opcode & 0x0F00) >> 8;
+
+        println!("LD F, V{}", vx);
+
+        self.i = (self.v[vx as usize] * 0x5) as u16;
+        self.pc += 2;
     }
 
     fn ld_b_vx(&mut self) {
@@ -181,8 +216,8 @@ impl VM {
     }
 
     fn unsupported_opcode(&self) {
-        // self.debug_memory();
-        // self.debug_registers();
+        self.debug_memory();
+        self.debug_registers();
         panic!("Opcode not handled: {:X}", self.opcode);
     }
 }
@@ -193,6 +228,7 @@ fn main() {
     setup_graphics();
     setup_input();
 
+    vm.load_fontset();
     vm.load_game(String::from("pong.rom"));
 
     loop {
