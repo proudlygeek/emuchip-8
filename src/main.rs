@@ -118,6 +118,7 @@ impl VM {
             (0x7, _, _, _) => self.add_vx_byte(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
             (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
@@ -150,7 +151,7 @@ impl VM {
     fn ld_f_vx(&mut self) {
         let vx = (self.opcode & 0x0F00) >> 8;
 
-        println!("LD F, V{}", vx);
+        println!("LD F, V{}\n", vx);
 
         self.i = (self.v[vx as usize] * 0x5) as u16;
         self.pc += 2;
@@ -159,7 +160,7 @@ impl VM {
     fn ld_b_vx(&mut self) {
         let vx = (self.opcode & 0x0F00) >> 8;
 
-        println!("LD B, V{}", vx);
+        println!("LD B, V{}\n", vx);
 
         self.memory[self.i as usize] = self.v[vx as usize] / 100;
         self.memory[(self.i + 1) as usize] = (self.v[vx as usize] / 10) % 10;
@@ -170,7 +171,7 @@ impl VM {
     fn ld_vx_i(&mut self) {
         let vx = (self.opcode & 0x0F00) >> 8;
 
-        println!("LD V{}, [I]", vx);
+        println!("LD V{}, [I]\n", vx);
 
         for v in 0..vx {
             self.v[v as usize] = self.memory[(self.i + v) as usize];
@@ -193,7 +194,7 @@ impl VM {
         let x = (self.opcode & 0x0F00) >> 8;
         let byte = (self.opcode & 0x00FF) as u8;
 
-        println!("ADD V{}, {:X}", x, byte);
+        println!("ADD V{}, {:X}\n", x, byte);
 
         self.v[x as usize] = self.v[x as usize] + byte;
         self.pc += 2;
@@ -234,6 +235,15 @@ impl VM {
         }
 
         self.draw_flag = true;
+        self.pc += 2;
+    }
+
+    fn ld_dt_vx(&mut self) {
+        let x = self.opcode & 0x0F00;
+
+        println!("LD DT, V{}\n", x);
+
+        self.delay_timer = self.v[x as usize];
         self.pc += 2;
     }
 
