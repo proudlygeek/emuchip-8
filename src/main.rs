@@ -6,8 +6,8 @@ struct VM {
     v: [u8; 16],        // 16 8-bit registers (from V0 to VE)
     i: u16,             // Index register, 2 bytes
     pc: u16,            // Program counter, 2 bytes
-    stack: [u8; 16],    // Stack
-    sp: u8,             // Stack Pointer
+    stack: [u16; 16],   // Stack
+    sp: u16,            // Stack Pointer
     key: [u8; 16],      // 1 byte for each input direction + controls
     gfx: [u8; 64 * 32], // Graphics is 64x32 pixels resolution, 1 byte each
     delay_timer: u8,    // Timer for events
@@ -73,13 +73,14 @@ impl VM {
         self.opcode = ((self.memory[self.pc as usize] as u16) << 8)
             | (self.memory[self.pc as usize + 1]) as u16;
 
-        println!("Opcode: {:X}", self.opcode);
+        // println!("Opcode: {:X}", self.opcode);
 
         // Decode and Execute Opcode
         match self.opcode & 0xF000 {
-            0x6000 => self.set_vx_to_value(),
-            0xA000 => self.set_i_to_address(),
-            0xD000 => self.draw_sprite_vx_vy_n(),
+            0x2000 => self.call_addr(),
+            0x6000 => self.ld_vx_byte(),
+            0xA000 => self.ld_i_addr(),
+            0xD000 => self.drw_vx_vy_n(),
             v => self.unsupported_opcode(v),
         }
 
@@ -90,30 +91,40 @@ impl VM {
         // Store key press state (Press and Release)
     }
 
-    fn set_vx_to_value(&mut self) {
+    fn call_addr(&mut self) {
+        let subroutine_address = self.opcode & 0x0FFF;
+
+        println!("CALL {:X}\n", subroutine_address);
+
+        self.stack[self.sp as usize] = self.pc;
+        self.sp += 1;
+        self.pc = subroutine_address;
+    }
+
+    fn ld_vx_byte(&mut self) {
         let v = (self.opcode & 0x0F00) >> 8;
         let value = (self.opcode & 0x00FF) as u8;
 
-        println!("Assign V{} = {:X}\n", v, value);
+        println!("LD V{}, {:X}\n", v, value);
 
         self.v[v as usize] = value;
         self.pc += 2;
     }
 
-    fn set_i_to_address(&mut self) {
+    fn ld_i_addr(&mut self) {
         let value = self.opcode & 0x0FFF;
 
-        println!("MEM I = {:X}\n", value);
+        println!("LD I, {:X}\n", value);
         self.i = value;
         self.pc += 2;
     }
 
-    fn draw_sprite_vx_vy_n(&mut self) {
+    fn drw_vx_vy_n(&mut self) {
         let vx = self.v[((self.opcode & 0x0F00) >> 8) as usize];
         let vy = self.v[((self.opcode & 0x00F0) >> 4) as usize];
         let rows = self.opcode & 0x000F;
 
-        println!("draw(V{},V{},{})\n", vx, vy, rows);
+        println!("DRW V{}, V{}, {}\n", vx, vy, rows);
 
         self.v[0xF] = 0; // Reset register VF
 
@@ -139,8 +150,8 @@ impl VM {
     }
 
     fn unsupported_opcode(&self, v: u16) {
-        self.debug_memory();
-        self.debug_registers();
+        // self.debug_memory();
+        // self.debug_registers();
         panic!("Opcode not handled: {:X}", v);
     }
 }
