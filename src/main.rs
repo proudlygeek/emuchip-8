@@ -73,15 +73,21 @@ impl VM {
         self.opcode = ((self.memory[self.pc as usize] as u16) << 8)
             | (self.memory[self.pc as usize + 1]) as u16;
 
-        // println!("Opcode: {:X}", self.opcode);
+        println!("Opcode: {:X}", self.opcode);
+
+        let op_1 = (self.opcode & 0xF000) >> 12;
+        let op_2 = (self.opcode & 0x0F00) >> 8;
+        let op_3 = (self.opcode & 0x00F0) >> 4;
+        let op_4 = self.opcode & 0x000F;
 
         // Decode and Execute Opcode
-        match self.opcode & 0xF000 {
-            0x2000 => self.call_addr(),
-            0x6000 => self.ld_vx_byte(),
-            0xA000 => self.ld_i_addr(),
-            0xD000 => self.drw_vx_vy_n(),
-            v => self.unsupported_opcode(v),
+        match (op_1, op_2, op_3, op_4) {
+            (0x2, _, _, _) => self.call_addr(),
+            (0x6, _, _, _) => self.ld_vx_byte(),
+            (0xA, _, _, _) => self.ld_i_addr(),
+            (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
+            _ => self.unsupported_opcode(),
         }
 
         // Update timers
@@ -99,6 +105,18 @@ impl VM {
         self.stack[self.sp as usize] = self.pc;
         self.sp += 1;
         self.pc = subroutine_address;
+    }
+
+    fn ld_b_vx(&mut self) {
+        let vx = (self.opcode & 0x0F00) >> 8;
+
+        println!("LD B, V{}", vx);
+
+        self.memory[self.i as usize] = self.v[vx as usize] / 100;
+        self.memory[(self.i + 1) as usize] = (self.v[vx as usize] / 10) % 10;
+        self.memory[(self.i + 2) as usize] = (self.v[vx as usize] % 100) % 10;
+
+        self.pc += 2;
     }
 
     fn ld_vx_byte(&mut self) {
@@ -149,10 +167,10 @@ impl VM {
         self.pc += 2;
     }
 
-    fn unsupported_opcode(&self, v: u16) {
+    fn unsupported_opcode(&self) {
         // self.debug_memory();
         // self.debug_registers();
-        panic!("Opcode not handled: {:X}", v);
+        panic!("Opcode not handled: {:X}", self.opcode);
     }
 }
 
