@@ -74,7 +74,12 @@ impl VM {
                 (self.opcode & 0x00FF) as u8,
             ),
             0xA000 => self.set_i_to_address(self.opcode & 0x0FFF),
-            v => println!("Opcode not handled: {:X}", v),
+            0xD000 => self.draw_sprite_vx_vy(
+                ((self.opcode & 0x0F00) >> 8) as u8,
+                ((self.opcode & 0x00F0) >> 4) as u8,
+                (self.opcode & 0x000F) as u8,
+            ),
+            v => panic!("Opcode not handled: {:X}", v),
         }
 
         // Update timers
@@ -85,14 +90,36 @@ impl VM {
     }
 
     fn set_vx_to_value(&mut self, v: u8, value: u8) {
-        println!("Assign V{} = {:X}", v, value);
+        println!("Assign V{} = {:X}\n", v, value);
         self.v[v as usize] = value;
         self.pc += 2;
     }
 
     fn set_i_to_address(&mut self, value: u16) {
-        println!("MEM I = {:X}", value);
+        println!("MEM I = {:X}\n", value);
         self.i = value;
+        self.pc += 2;
+    }
+
+    fn draw_sprite_vx_vy(&mut self, x: u8, y: u8, height: u8) {
+        println!("draw(V{},V{},{})\n", x, y, height);
+        self.v[0xF] = 0; // Reset register VF
+
+        for yline in 0..height {
+            let pixel = self.memory[(self.i + yline as u16) as usize];
+
+            for xline in 0..8 {
+                if (pixel & (0x80 >> xline)) != 0 {
+                    if self.gfx[(x + xline + ((y + yline) * 64)) as usize] == 1 {
+                        self.v[0xF] = 1; // Collision detected, set register VF
+                    }
+
+                    self.gfx[(x + xline + ((y + yline) * 64)) as usize] ^= 1; // Set pixel value using XOR
+                }
+            }
+        }
+
+        self.draw_flag = true;
         self.pc += 2;
     }
 }
