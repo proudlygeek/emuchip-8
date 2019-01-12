@@ -67,7 +67,7 @@ impl VM {
     }
 
     fn debug_memory(&self) {
-        for i in (0..self.memory.len()).step_by(16) {
+        for i in (0..self.memory.len()).step_by(8) {
             println!(
                 "0x{:02X} | {:02X}{:02X} {:02X}{:02X} {:02X}{:02X} {:02X}{:02X}",
                 i,
@@ -89,6 +89,7 @@ impl VM {
         }
 
         println!("I: {:X}", self.i);
+        println!("pc: 0x{:02X}", self.pc);
     }
 
     fn emulate_cycle(&mut self) {
@@ -107,6 +108,7 @@ impl VM {
 
         // Decode and Execute Opcode
         match (op_1, op_2, op_3, op_4) {
+            (0x0, 0x0, 0xE, 0xE) => self.ret(),
             (0x2, _, _, _) => self.call_addr(),
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0x7, _, _, _) => self.add_vx_byte(),
@@ -123,6 +125,12 @@ impl VM {
 
     fn set_keys(&self) {
         // Store key press state (Press and Release)
+    }
+
+    fn ret(&mut self) {
+        println!("RET\n");
+        self.pc = self.stack[self.sp as usize];
+        self.sp -= 1;
     }
 
     fn call_addr(&mut self) {
@@ -152,7 +160,6 @@ impl VM {
         self.memory[self.i as usize] = self.v[vx as usize] / 100;
         self.memory[(self.i + 1) as usize] = (self.v[vx as usize] / 10) % 10;
         self.memory[(self.i + 2) as usize] = (self.v[vx as usize] % 100) % 10;
-
         self.pc += 2;
     }
 
@@ -229,7 +236,7 @@ impl VM {
     fn unsupported_opcode(&self) {
         // self.debug_memory();
         // self.debug_registers();
-        panic!("Opcode not handled: {:X}", self.opcode);
+        panic!("Opcode not handled: 0x{:04X}", self.opcode);
     }
 }
 
