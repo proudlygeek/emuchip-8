@@ -370,3 +370,19 @@ impl VM {
         panic!("Opcode not handled: 0x{:04X}", self.opcode);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ret() {
+        let mut vm = VM::initialize(false);
+        vm.stack[0] = 0x2E;
+        vm.sp = 1;
+        vm.ret();
+
+        assert_eq!(vm.sp, 0);
+        assert_eq!(vm.pc, 0x2E + 2);
+    }
+}
