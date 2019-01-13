@@ -123,6 +123,7 @@ impl VM {
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xE, _, 0xA, 0x1) => self.sknp_vx(),
             (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
@@ -145,7 +146,7 @@ impl VM {
         }
     }
 
-    pub fn set_keys(&self) {
+    pub fn set_keys(&mut self) {
         // Store key press state (Press and Release)
     }
 
@@ -285,6 +286,18 @@ impl VM {
 
         self.draw_flag = true;
         self.pc += 2;
+    }
+
+    fn sknp_vx(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+
+        println!("SKNP V{}\n", x);
+
+        if self.key[self.v[x as usize] as usize] == 0 {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
     }
 
     fn ld_vx_dt(&mut self) {
