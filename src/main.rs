@@ -118,6 +118,7 @@ impl VM {
             (0x7, _, _, _) => self.add_vx_byte(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
@@ -235,6 +236,13 @@ impl VM {
         }
 
         self.draw_flag = true;
+        self.pc += 2;
+    }
+
+    fn ld_vx_dt(&mut self) {
+        let x = self.opcode & 0x0F00;
+
+        self.v[x as usize] = self.delay_timer;
         self.pc += 2;
     }
 
