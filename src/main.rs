@@ -114,6 +114,7 @@ impl VM {
         match (op_1, op_2, op_3, op_4) {
             (0x0, 0x0, 0xE, 0xE) => self.ret(),
             (0x2, _, _, _) => self.call_addr(),
+            (0x3, _, _, _) => self.se_vx_byte(),
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0x7, _, _, _) => self.add_vx_byte(),
             (0xA, _, _, _) => self.ld_i_addr(),
@@ -149,12 +150,25 @@ impl VM {
         self.pc = subroutine_address;
     }
 
+    fn se_vx_byte(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let byte = (self.opcode & 0x00FF) as u8;
+
+        println!("SE V{}, {:X}\n", x, byte);
+
+        if self.v[x as usize] == byte {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
+    }
+
     fn ld_f_vx(&mut self) {
-        let vx = (self.opcode & 0x0F00) >> 8;
+        let x = (self.opcode & 0x0F00) >> 8;
 
-        println!("LD F, V{}\n", vx);
+        println!("LD F, V{}\n", x);
 
-        self.i = (self.v[vx as usize] * 0x5) as u16;
+        self.i = (self.v[x as usize] * 0x5) as u16;
         self.pc += 2;
     }
 
@@ -240,14 +254,16 @@ impl VM {
     }
 
     fn ld_vx_dt(&mut self) {
-        let x = self.opcode & 0x0F00;
+        let x = (self.opcode & 0x0F00) >> 8;
+
+        println!("LD V{}, DT\n", x);
 
         self.v[x as usize] = self.delay_timer;
         self.pc += 2;
     }
 
     fn ld_dt_vx(&mut self) {
-        let x = self.opcode & 0x0F00;
+        let x = (self.opcode & 0x0F00) >> 8;
 
         println!("LD DT, V{}\n", x);
 
