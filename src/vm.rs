@@ -505,4 +505,65 @@ mod tests {
         assert_eq!(vm.v[0xF], 1);
         assert_eq!(vm.pc, 0x202)
     }
+
+    #[test]
+    fn ld_i_addr() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xA123;
+        vm.ld_i_addr();
+
+        assert_eq!(vm.i, 0x123);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn rnd_vx_byte() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xCA23;
+        vm.v[0xA] = 0x0;
+        vm.rnd_vx_byte();
+
+        assert_ne!(vm.v[0xA], 0x0);
+        assert_ne!(vm.v[0xA], 0x23);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn drw_vx_vy_n() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xDAB3;
+        vm.v[0xA] = 0x0;
+        vm.v[0xB] = 0x0;
+        vm.i = 0x200;
+        vm.memory[0x200] = 0x3C;
+        vm.memory[0x201] = 0xC3;
+        vm.memory[0x202] = 0xFF;
+        vm.drw_vx_vy_n();
+
+        assert_eq!(vm.v[0xF], 0);
+        assert_eq!(&vm.gfx[0..8], [0, 0, 1, 1, 1, 1, 0, 0]);
+        assert_eq!(&vm.gfx[64..72], [1, 1, 0, 0, 0, 0, 1, 1]);
+        assert_eq!(&vm.gfx[128..136], [1, 1, 1, 1, 1, 1, 1, 1]);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn drw_vx_vy_n_collision() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xDAB3;
+        vm.v[0xA] = 0x0;
+        vm.v[0xB] = 0x0;
+        vm.i = 0x200;
+        vm.memory[0x200] = 0x3C;
+        vm.memory[0x201] = 0xC3;
+        vm.memory[0x202] = 0xFF;
+        vm.gfx[128] = 1;
+        vm.drw_vx_vy_n();
+
+        assert_eq!(vm.v[0xF], 1);
+        assert_eq!(&vm.gfx[0..8], [0, 0, 1, 1, 1, 1, 0, 0]);
+        assert_eq!(&vm.gfx[64..72], [1, 1, 0, 0, 0, 0, 1, 1]);
+        assert_eq!(&vm.gfx[128..136], [0, 1, 1, 1, 1, 1, 1, 1]);
+        assert_eq!(vm.pc, 0x202);
+    }
 }
