@@ -194,7 +194,7 @@ impl VM {
         let x = (self.opcode & 0x0F00) >> 8;
         let byte = (self.opcode & 0x00FF) as u8;
 
-        println!("SNE V{}, {:X}", x, byte);
+        println!("SNE V{}, {:X}\n", x, byte);
 
         if self.v[x as usize] != byte {
             self.pc += 4;
@@ -287,16 +287,17 @@ impl VM {
     fn add_vx_vy(&mut self) {
         let x = (self.opcode & 0x0F00) >> 8;
         let y = (self.opcode & 0x00F0) >> 4;
+        let sum = (self.v[x as usize] as u16) + (self.v[x as usize] as u16);
 
         println!("ADD V{}, V{}\n", x, y);
 
-        if self.v[y as usize] > (0xFF - self.v[x as usize]) {
+        if sum > 0xFF {
             self.v[0xF] = 1;
         } else {
             self.v[0xf] = 0;
         }
 
-        self.v[x as usize] = ((self.v[x as usize] as u16) + (self.v[x as usize] as u16)) as u8;
+        self.v[x as usize] = sum as u8;
         self.pc += 2;
     }
 
