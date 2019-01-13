@@ -287,14 +287,14 @@ impl VM {
     fn add_vx_vy(&mut self) {
         let x = (self.opcode & 0x0F00) >> 8;
         let y = (self.opcode & 0x00F0) >> 4;
-        let sum = (self.v[x as usize] as u16) + (self.v[x as usize] as u16);
+        let sum = (self.v[x as usize] as u16) + (self.v[y as usize] as u16);
 
         println!("ADD V{}, V{}\n", x, y);
 
         if sum > 0xFF {
             self.v[0xF] = 1;
         } else {
-            self.v[0xf] = 0;
+            self.v[0xF] = 0;
         }
 
         self.v[x as usize] = sum as u8;
@@ -454,5 +454,55 @@ mod tests {
         vm.ld_vx_byte();
 
         assert_eq!(vm.v[0xA], 0xFF);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn add_vx_byte() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x7A05;
+        vm.v[0xA] = 0x7;
+        vm.add_vx_byte();
+
+        assert_eq!(vm.v[0xA], 0xC);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn and_vx_vy() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB2;
+        vm.v[0xA] = 0x2F;
+        vm.v[0xB] = 0xAB;
+        vm.and_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0x2B);
+        assert_eq!(vm.pc, 0x202)
+    }
+
+    #[test]
+    fn add_vx_vy_zero_carry() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB4;
+        vm.v[0xA] = 0x2F;
+        vm.v[0xB] = 0xAB;
+        vm.add_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0xDA);
+        assert_eq!(vm.v[0xF], 0);
+        assert_eq!(vm.pc, 0x202)
+    }
+
+    #[test]
+    fn add_vx_vy_with_carry() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB4;
+        vm.v[0xA] = 0xFF;
+        vm.v[0xB] = 0x2;
+        vm.add_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0x1);
+        assert_eq!(vm.v[0xF], 1);
+        assert_eq!(vm.pc, 0x202)
     }
 }
