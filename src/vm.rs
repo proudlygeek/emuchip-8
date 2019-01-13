@@ -1,19 +1,19 @@
 use std::fs;
 
 pub struct VM {
-    opcode: u16,         // 2 bytes opcodes
-    memory: [u8; 4096],  // 4KB of memory == 4096 bytes
-    v: [u8; 16],         // 16 8-bit registers (from V0 to VE)
-    i: u16,              // Index register, 2 bytes
-    pc: u16,             // Program counter, 2 bytes
-    stack: [u16; 16],    // Stack
-    sp: u16,             // Stack Pointer
-    key: [u8; 16],       // 1 byte for each input direction + controls
-    gfx: [u8; 64 * 32],  // Graphics is 64x32 pixels resolution, 1 byte each
-    delay_timer: u8,     // Timer for events
-    sound_timer: u8,     // Timer for emitting sounds. When zero, sound is emitted
-    pub draw_flag: bool, // Flush graphic
-    debug: bool,         // Debug mode
+    opcode: u16,            // 2 bytes opcodes
+    memory: [u8; 4096],     // 4KB of memory == 4096 bytes
+    v: [u8; 16],            // 16 8-bit registers (from V0 to VE)
+    i: u16,                 // Index register, 2 bytes
+    pc: u16,                // Program counter, 2 bytes
+    stack: [u16; 16],       // Stack
+    sp: u16,                // Stack Pointer
+    key: [u8; 16],          // 1 byte for each input direction + controls
+    pub gfx: [u8; 64 * 32], // Graphics is 64x32 pixels resolution, 1 byte each
+    delay_timer: u8,        // Timer for events
+    sound_timer: u8,        // Timer for emitting sounds. When zero, sound is emitted
+    pub draw_flag: bool,    // Flush graphic
+    debug: bool,            // Debug mode
 }
 
 impl VM {
