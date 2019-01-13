@@ -61,10 +61,6 @@ fn main() {
     }
 }
 
-fn setup_graphics() {}
-
-fn setup_input() {}
-
 fn draw_graphic(vm: &VM, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, scale: u32) {
     for i in 0..64 * 32 {
         let pixel = vm.gfx[i];
