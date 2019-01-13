@@ -203,6 +203,16 @@ impl VM {
         }
     }
 
+    fn ld_vx_byte(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let value = (self.opcode & 0x00FF) as u8;
+
+        println!("LD V{}, {:X}\n", x, value);
+
+        self.v[x as usize] = value;
+        self.pc += 2;
+    }
+
     fn ld_f_vx(&mut self) {
         let x = (self.opcode & 0x0F00) >> 8;
 
@@ -232,16 +242,6 @@ impl VM {
             self.v[v as usize] = self.memory[(self.i + v) as usize];
         }
 
-        self.pc += 2;
-    }
-
-    fn ld_vx_byte(&mut self) {
-        let v = (self.opcode & 0x0F00) >> 8;
-        let value = (self.opcode & 0x00FF) as u8;
-
-        println!("LD V{}, {:X}\n", v, value);
-
-        self.v[v as usize] = value;
         self.pc += 2;
     }
 
@@ -384,5 +384,75 @@ mod tests {
 
         assert_eq!(vm.sp, 0);
         assert_eq!(vm.pc, 0x2E + 2);
+    }
+
+    #[test]
+    fn jp_addr() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x0666;
+        vm.jp_addr();
+
+        assert_eq!(vm.pc, 0x0666);
+    }
+
+    #[test]
+    fn call_addr() {
+        let mut vm = VM::initialize(false);
+        vm.pc = 0x444;
+        vm.opcode = 0x2123;
+        vm.call_addr();
+
+        assert_eq!(vm.stack[0], 0x444);
+        assert_eq!(vm.sp, 1);
+        assert_eq!(vm.pc, 0x123);
+    }
+
+    #[test]
+    fn se_vx_byte_equals() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x3AFF;
+        vm.v[0xA] = 0xFF;
+        vm.se_vx_byte();
+
+        assert_eq!(vm.pc, 0x204);
+    }
+
+    #[test]
+    fn se_vx_byte_not_equals() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x3AFF;
+        vm.v[0xA] = 0xFA;
+        vm.se_vx_byte();
+
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn sne_vx_byte_equals() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x4BFF;
+        vm.v[0xB] = 0xFF;
+        vm.sne_vx_byte();
+
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn sne_vx_byte_not_equals() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x4BFF;
+        vm.v[0xB] = 0xFA;
+        vm.sne_vx_byte();
+
+        assert_eq!(vm.pc, 0x204);
+    }
+
+    #[test]
+    fn ld_vx_byte() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x6AFF;
+        vm.ld_vx_byte();
+
+        assert_eq!(vm.v[0xA], 0xFF);
     }
 }
