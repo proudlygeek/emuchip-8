@@ -113,6 +113,7 @@ impl VM {
         // Decode and Execute Opcode
         match (op_1, op_2, op_3, op_4) {
             (0x0, 0x0, 0xE, 0xE) => self.ret(),
+            (0x1, _, _, _) => self.jp_addr(),
             (0x2, _, _, _) => self.call_addr(),
             (0x3, _, _, _) => self.se_vx_byte(),
             (0x6, _, _, _) => self.ld_vx_byte(),
@@ -140,8 +141,16 @@ impl VM {
         self.pc = self.stack[self.sp as usize] + 2;
     }
 
+    fn jp_addr(&mut self) {
+        let addr = self.opcode & 0x0FFF;
+
+        println!("JP {:X}\n", addr);
+
+        self.pc = addr;
+    }
+
     fn call_addr(&mut self) {
-        let subroutine_address = self.opcode & 0x0FFF;
+        let subroutine_address = self.opcode & 0xFFF;
 
         println!("CALL {:X}\n", subroutine_address);
 
