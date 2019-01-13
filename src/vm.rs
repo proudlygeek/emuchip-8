@@ -118,6 +118,7 @@ impl VM {
             (0x1, _, _, _) => self.jp_addr(),
             (0x2, _, _, _) => self.call_addr(),
             (0x3, _, _, _) => self.se_vx_byte(),
+            (0x4, _, _, _) => self.sne_vx_byte(),
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0x7, _, _, _) => self.add_vx_byte(),
             (0x8, _, _, 0x2) => self.and_vx_vy(),
@@ -183,6 +184,19 @@ impl VM {
         println!("SE V{}, {:X}\n", x, byte);
 
         if self.v[x as usize] == byte {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
+    }
+
+    fn sne_vx_byte(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let byte = (self.opcode & 0x00FF) as u8;
+
+        println!("SNE V{}, {:X}", x, byte);
+
+        if self.v[x as usize] != byte {
             self.pc += 4;
         } else {
             self.pc += 2;
