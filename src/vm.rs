@@ -121,6 +121,7 @@ impl VM {
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0x7, _, _, _) => self.add_vx_byte(),
             (0x8, _, _, 0x2) => self.and_vx_vy(),
+            (0x8, _, _, 0x4) => self.add_vx_vy(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
@@ -266,6 +267,22 @@ impl VM {
         println!("AND V{}, V{}\n", x, y);
 
         self.v[x as usize] &= self.v[y as usize];
+        self.pc += 2;
+    }
+
+    fn add_vx_vy(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let y = (self.opcode & 0x00F0) >> 4;
+
+        println!("ADD V{}, V{}\n", x, y);
+
+        if self.v[y as usize] > (0xFF - self.v[x as usize]) {
+            self.v[0xF] = 1;
+        } else {
+            self.v[0xf] = 0;
+        }
+
+        self.v[x as usize] = ((self.v[x as usize] as u16) + (self.v[x as usize] as u16)) as u8;
         self.pc += 2;
     }
 
