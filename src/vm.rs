@@ -237,7 +237,7 @@ impl VM {
 
         println!("LD V{}, [I]\n", vx);
 
-        for v in 0..vx {
+        for v in 0..vx + 1 {
             self.v[v as usize] = self.memory[(self.i + v) as usize];
         }
 
@@ -728,12 +728,14 @@ mod tests {
         vm.memory[0x400] = 0x1;
         vm.memory[0x401] = 0x2;
         vm.memory[0x402] = 0x3;
+        vm.memory[0x403] = 0x4;
         vm.i = 0x400;
         vm.ld_vx_i();
 
         assert_eq!(vm.v[0x0], 0x1);
         assert_eq!(vm.v[0x1], 0x2);
         assert_eq!(vm.v[0x2], 0x3);
+        assert_eq!(vm.v[0x3], 0x4);
         assert_eq!(vm.pc, 0x202);
     }
 }

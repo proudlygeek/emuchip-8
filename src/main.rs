@@ -67,6 +67,11 @@ fn main() {
             draw_graphic(&vm, &mut canvas, 10);
         }
     }
+
+    if debug {
+        vm.debug_memory();
+        vm.debug_registers();
+    }
 }
 
 fn draw_graphic(vm: &VM, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>, scale: u32) {
