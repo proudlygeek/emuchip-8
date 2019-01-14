@@ -255,7 +255,7 @@ impl VM {
 
         println!("ADD V{}, {:X}\n", x, byte);
 
-        self.v[x as usize] = sum as u8;
+        self.v[x] = sum as u8;
         self.pc += 2;
     }
 
