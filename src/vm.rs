@@ -566,4 +566,89 @@ mod tests {
         assert_eq!(&vm.gfx[128..136], [0, 1, 1, 1, 1, 1, 1, 1]);
         assert_eq!(vm.pc, 0x202);
     }
+
+    #[test]
+    fn sknp_vx_not_pressed() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xEAA1;
+        vm.v[0xA] = 0xF;
+        vm.key[0xF] = 0;
+        vm.sknp_vx();
+
+        assert_eq!(vm.pc, 0x204);
+    }
+
+    #[test]
+    fn sknp_vx_pressed() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xEAA1;
+        vm.v[0xA] = 0xF;
+        vm.key[0xF] = 1;
+        vm.sknp_vx();
+
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_vx_dt() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA07;
+        vm.delay_timer = 0x7;
+        vm.ld_vx_dt();
+
+        assert_eq!(vm.v[0xA], 0x7);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_dt_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA15;
+        vm.v[0xA] = 0x7;
+        vm.ld_dt_vx();
+
+        assert_eq!(vm.delay_timer, 0x7);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_f_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA29;
+        vm.v[0xA] = 0x1;
+        vm.ld_f_vx();
+
+        assert_eq!(vm.i, 0x5);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_b_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA33;
+        vm.v[0xA] = 0x7B;
+        vm.i = 0x400;
+        vm.ld_b_vx();
+
+        assert_eq!(vm.memory[0x400], 0x1);
+        assert_eq!(vm.memory[0x401], 0x2);
+        assert_eq!(vm.memory[0x402], 0x3);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_vx_i() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xF365;
+        vm.memory[0x400] = 0x1;
+        vm.memory[0x401] = 0x2;
+        vm.memory[0x402] = 0x3;
+        vm.i = 0x400;
+        vm.ld_vx_i();
+
+        assert_eq!(vm.v[0x0], 0x1);
+        assert_eq!(vm.v[0x1], 0x2);
+        assert_eq!(vm.v[0x2], 0x3);
+        assert_eq!(vm.pc, 0x202);
+    }
 }
