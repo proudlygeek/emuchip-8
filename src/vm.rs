@@ -11,7 +11,7 @@ pub struct VM {
     pc: u16,                // Program counter, 2 bytes
     stack: [u16; 16],       // Stack
     sp: u16,                // Stack Pointer
-    key: [u8; 16],          // 1 byte for each input direction + controls
+    pub key: [bool; 16],    // 1 bit for each input direction + controls
     pub gfx: [u8; 64 * 32], // Graphics is 64x32 pixels resolution, 1 byte each
     delay_timer: u8,        // Timer for events
     sound_timer: u8,        // Timer for emitting sounds. When zero, sound is emitted
@@ -29,7 +29,7 @@ impl VM {
             i: 0,
             stack: [0; 16],
             sp: 0,
-            key: [0; 16],
+            key: [false; 16],
             gfx: [0; 64 * 32],
             delay_timer: 0,
             sound_timer: 0xFF,
@@ -150,10 +150,6 @@ impl VM {
                 println!("Sound");
             }
         }
-    }
-
-    pub fn set_keys(&mut self) {
-        // Store key press state (Press and Release)
     }
 
     fn ret(&mut self) {
@@ -368,7 +364,7 @@ impl VM {
 
         println!("SKNP V{}\n", x);
 
-        if self.key[self.v[x as usize] as usize] == 0 {
+        if self.key[self.v[x as usize] as usize] == false {
             self.pc += 4;
         } else {
             self.pc += 2;

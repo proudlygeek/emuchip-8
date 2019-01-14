@@ -48,6 +48,14 @@ fn main() {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
+                Event::KeyDown {
+                    keycode: Some(keycode),
+                    ..
+                } => handle_key_down(&mut vm, keycode),
+                Event::KeyUp {
+                    keycode: Some(keycode),
+                    ..
+                } => handle_key_up(&mut vm, keycode),
                 _ => {}
             }
         }
@@ -77,4 +85,48 @@ fn draw_graphic(vm: &VM, canvas: &mut sdl2::render::Canvas<sdl2::video::Window>,
     }
 
     canvas.present();
+}
+
+pub fn handle_key_down(vm: &mut vm::VM, keycode: Keycode) {
+    match keycode {
+        Keycode::Num1 => vm.key[0x1] = true,
+        Keycode::Num2 => vm.key[0x2] = true,
+        Keycode::Num3 => vm.key[0x3] = true,
+        Keycode::Num4 => vm.key[0xC] = true,
+        Keycode::Q => vm.key[0x4] = true,
+        Keycode::W => vm.key[0x5] = true,
+        Keycode::E => vm.key[0x6] = true,
+        Keycode::R => vm.key[0xD] = true,
+        Keycode::A => vm.key[0x7] = true,
+        Keycode::S => vm.key[0x8] = true,
+        Keycode::D => vm.key[0x9] = true,
+        Keycode::F => vm.key[0xE] = true,
+        Keycode::Z => vm.key[0xA] = true,
+        Keycode::X => vm.key[0x0] = true,
+        Keycode::C => vm.key[0xB] = true,
+        Keycode::V => vm.key[0xF] = true,
+        _ => (),
+    }
+}
+
+pub fn handle_key_up(vm: &mut VM, keycode: Keycode) {
+    match keycode {
+        Keycode::Num1 => vm.key[0x1] = false,
+        Keycode::Num2 => vm.key[0x2] = false,
+        Keycode::Num3 => vm.key[0x3] = false,
+        Keycode::Num4 => vm.key[0xC] = false,
+        Keycode::Q => vm.key[0x4] = false,
+        Keycode::W => vm.key[0x5] = false,
+        Keycode::E => vm.key[0x6] = false,
+        Keycode::R => vm.key[0xD] = false,
+        Keycode::A => vm.key[0x7] = false,
+        Keycode::S => vm.key[0x8] = false,
+        Keycode::D => vm.key[0x9] = false,
+        Keycode::F => vm.key[0xE] = false,
+        Keycode::Z => vm.key[0xA] = false,
+        Keycode::X => vm.key[0x0] = false,
+        Keycode::C => vm.key[0xB] = false,
+        Keycode::V => vm.key[0xF] = false,
+        _ => (),
+    }
 }
