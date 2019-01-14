@@ -131,6 +131,7 @@ impl VM {
             (0xE, _, 0xA, 0x1) => self.sknp_vx(),
             (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
+            (0xF, _, 0x1, 0x8) => self.ld_st_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
             (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
@@ -388,6 +389,15 @@ impl VM {
         println!("LD DT, V{}\n", x);
 
         self.delay_timer = self.v[x as usize];
+        self.pc += 2;
+    }
+
+    fn ld_st_vx(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+
+        println!("LD ST, V{}\n", x);
+
+        self.sound_timer = self.v[x];
         self.pc += 2;
     }
 
@@ -675,6 +685,17 @@ mod tests {
         vm.ld_dt_vx();
 
         assert_eq!(vm.delay_timer, 0x7);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_st_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA18;
+        vm.v[0xA] = 0x7;
+        vm.ld_st_vx();
+
+        assert_eq!(vm.sound_timer, 0x7);
         assert_eq!(vm.pc, 0x202);
     }
 
