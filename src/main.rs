@@ -26,7 +26,7 @@ fn main() {
     let video_subsystem = sdl_context.video().unwrap();
 
     let window = video_subsystem
-        .window("EmuChip-8", 800, 600)
+        .window("EmuChip-8", 640, 320)
         .position_centered()
         .opengl()
         .build()
@@ -51,12 +51,12 @@ fn main() {
                 _ => {}
             }
         }
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 600));
         // The rest of the game loop goes here...
         vm.emulate_cycle();
 
         if vm.draw_flag {
-            draw_graphic(&vm, &mut canvas, 12);
+            draw_graphic(&vm, &mut canvas, 10);
         }
     }
 }

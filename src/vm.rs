@@ -249,12 +249,13 @@ impl VM {
     }
 
     fn add_vx_byte(&mut self) {
-        let x = (self.opcode & 0x0F00) >> 8;
-        let byte = (self.opcode & 0x00FF) as u8;
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+        let byte = (self.opcode & 0x00FF) as u16;
+        let sum = self.v[x] as u16 + byte;
 
         println!("ADD V{}, {:X}\n", x, byte);
 
-        self.v[x as usize] = self.v[x as usize] + byte;
+        self.v[x as usize] = sum as u8;
         self.pc += 2;
     }
 
