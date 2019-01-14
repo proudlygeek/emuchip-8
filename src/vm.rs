@@ -38,7 +38,7 @@ impl VM {
         }
     }
 
-    pub fn load_game(&mut self, path: String) {
+    pub fn load_game(&mut self, path: &String) {
         let buffer = fs::read(path).unwrap();
 
         for i in 0..buffer.len() {
@@ -646,7 +646,7 @@ mod tests {
         let mut vm = VM::initialize(false);
         vm.opcode = 0xEAA1;
         vm.v[0xA] = 0xF;
-        vm.key[0xF] = 0;
+        vm.key[0xF] = false;
         vm.sknp_vx();
 
         assert_eq!(vm.pc, 0x204);
@@ -657,7 +657,7 @@ mod tests {
         let mut vm = VM::initialize(false);
         vm.opcode = 0xEAA1;
         vm.v[0xA] = 0xF;
-        vm.key[0xF] = 1;
+        vm.key[0xF] = true;
         vm.sknp_vx();
 
         assert_eq!(vm.pc, 0x202);

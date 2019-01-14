@@ -14,13 +14,13 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     let mut debug = false;
 
-    if args.len() > 1 {
-        debug = args[1] == "--debug";
+    if args.len() > 2 {
+        debug = args[2] == "--debug";
     }
 
     let mut vm = VM::initialize(debug);
     vm.load_fontset();
-    vm.load_game(String::from("pong.rom"));
+    vm.load_game(&args[1]);
 
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
