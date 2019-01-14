@@ -124,6 +124,7 @@ impl VM {
             (0x8, _, _, 0x0) => self.ld_vx_vy(),
             (0x8, _, _, 0x2) => self.and_vx_vy(),
             (0x8, _, _, 0x4) => self.add_vx_vy(),
+            (0x8, _, _, 0x5) => self.sub_vx_vy(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
@@ -297,9 +298,10 @@ impl VM {
     }
 
     fn add_vx_vy(&mut self) {
-        let x = (self.opcode & 0x0F00) >> 8;
-        let y = (self.opcode & 0x00F0) >> 4;
-        let sum = (self.v[x as usize] as u16) + (self.v[y as usize] as u16);
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+        let y = ((self.opcode & 0x00F0) >> 4) as usize;
+
+        let sum = (self.v[x] as u16) + (self.v[y] as u16);
 
         println!("ADD V{}, V{}\n", x, y);
 
@@ -309,7 +311,23 @@ impl VM {
             self.v[0xF] = 0;
         }
 
-        self.v[x as usize] = sum as u8;
+        self.v[x] = sum as u8;
+        self.pc += 2;
+    }
+
+    fn sub_vx_vy(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+        let y = ((self.opcode & 0x00F0) >> 4) as usize;
+
+        println!("SUB V{}, V{}\n", x, y);
+
+        if self.v[x] > self.v[y] {
+            self.v[0xF] = 1;
+        } else {
+            self.v[0xF] = 0;
+        }
+
+        self.v[x] = self.v[x].wrapping_sub(self.v[y]);
         self.pc += 2;
     }
 
@@ -527,6 +545,32 @@ mod tests {
         assert_eq!(vm.v[0xA], 0x1);
         assert_eq!(vm.v[0xF], 1);
         assert_eq!(vm.pc, 0x202)
+    }
+
+    #[test]
+    fn sub_vx_vy_no_borrow() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB5;
+        vm.v[0xA] = 0xFF;
+        vm.v[0xB] = 0xAA;
+        vm.sub_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0x55);
+        assert_eq!(vm.v[0xF], 1);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn sub_vx_vy_borrow() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB5;
+        vm.v[0xA] = 0xAA;
+        vm.v[0xB] = 0xFF;
+        vm.sub_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0xAB);
+        assert_eq!(vm.v[0xF], 0);
+        assert_eq!(vm.pc, 0x202);
     }
 
     #[test]
