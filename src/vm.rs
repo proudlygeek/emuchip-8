@@ -121,6 +121,7 @@ impl VM {
             (0x4, _, _, _) => self.sne_vx_byte(),
             (0x6, _, _, _) => self.ld_vx_byte(),
             (0x7, _, _, _) => self.add_vx_byte(),
+            (0x8, _, _, 0x0) => self.ld_vx_vy(),
             (0x8, _, _, 0x2) => self.and_vx_vy(),
             (0x8, _, _, 0x4) => self.add_vx_vy(),
             (0xA, _, _, _) => self.ld_i_addr(),
@@ -281,6 +282,17 @@ impl VM {
         println!("AND V{}, V{}\n", x, y);
 
         self.v[x as usize] &= self.v[y as usize];
+        self.pc += 2;
+    }
+
+    fn ld_vx_vy(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+        let y = (self.opcode & 0x00F0) >> 4;
+
+        println!("LD V{}, V{}", x, y);
+
+        self.v[x as usize] = self.v[y as usize];
+
         self.pc += 2;
     }
 
@@ -478,6 +490,17 @@ mod tests {
 
         assert_eq!(vm.v[0xA], 0x2B);
         assert_eq!(vm.pc, 0x202)
+    }
+
+    #[test]
+    fn ld_vx_vy() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8070;
+        vm.v[0x7] = 0xAA;
+        vm.ld_vx_vy();
+
+        assert_eq!(vm.v[0x0], 0xAA);
+        assert_eq!(vm.pc, 0x202);
     }
 
     #[test]
