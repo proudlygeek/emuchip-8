@@ -114,6 +114,7 @@ impl VM {
 
         // Decode and Execute Opcode
         match (op_1, op_2, op_3, op_4) {
+            (0x0, 0x0, 0xE, 0x0) => self.cls(),
             (0x0, 0x0, 0xE, 0xE) => self.ret(),
             (0x1, _, _, _) => self.jp_addr(),
             (0x2, _, _, _) => self.call_addr(),
@@ -154,6 +155,16 @@ impl VM {
                 println!("Sound");
             }
         }
+    }
+    fn cls(&mut self) {
+        println!("CLS\n");
+
+        for i in 0..64 * 32 {
+            self.gfx[i] = 0;
+        }
+
+        self.draw_flag = true;
+        self.pc += 2;
     }
 
     fn ret(&mut self) {
@@ -461,6 +472,24 @@ impl VM {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cls() {
+        let mut vm = VM::initialize(false);
+
+        for i in 0..64 * 32 {
+            vm.gfx[i] = 1;
+        }
+
+        vm.cls();
+
+        for i in 0..64 * 32 {
+            assert_eq!(vm.gfx[i], 0);
+        }
+
+        assert_eq!(vm.draw_flag, true);
+        assert_eq!(vm.pc, 0x202);
+    }
 
     #[test]
     fn ret() {
