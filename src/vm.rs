@@ -125,6 +125,7 @@ impl VM {
             (0x8, _, _, 0x2) => self.and_vx_vy(),
             (0x8, _, _, 0x4) => self.add_vx_vy(),
             (0x8, _, _, 0x5) => self.sub_vx_vy(),
+            (0x9, _, _, 0x0) => self.sne_vx_vy(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
@@ -329,6 +330,19 @@ impl VM {
 
         self.v[x] = self.v[x].wrapping_sub(self.v[y]);
         self.pc += 2;
+    }
+
+    fn sne_vx_vy(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+        let y = ((self.opcode & 0x00F0) >> 4) as usize;
+
+        println!("SNE V{}, V{}", x, y);
+
+        if self.v[x] != self.v[y] {
+            self.pc += 4
+        } else {
+            self.pc += 2;
+        }
     }
 
     fn drw_vx_vy_n(&mut self) {
@@ -622,6 +636,28 @@ mod tests {
 
         assert_ne!(vm.v[0xA], 0x0);
         assert_ne!(vm.v[0xA], 0x23);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn sne_vx_vy_skip() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x9AB0;
+        vm.v[0xA] = 0x1;
+        vm.v[0xB] = 0x2;
+        vm.sne_vx_vy();
+
+        assert_eq!(vm.pc, 0x204);
+    }
+
+    #[test]
+    fn sne_vx_vy_no_skip() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x9AB0;
+        vm.v[0xA] = 0x1;
+        vm.v[0xB] = 0x1;
+        vm.sne_vx_vy();
+
         assert_eq!(vm.pc, 0x202);
     }
 
