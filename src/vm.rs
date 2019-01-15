@@ -132,6 +132,7 @@ impl VM {
             (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
             (0xF, _, 0x1, 0x8) => self.ld_st_vx(),
+            (0xF, _, 0x1, 0xE) => self.add_i_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
             (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
@@ -395,6 +396,15 @@ impl VM {
         println!("LD ST, V{}\n", x);
 
         self.sound_timer = self.v[x];
+        self.pc += 2;
+    }
+
+    fn add_i_vx(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+
+        println!("ADD I, V{}", x);
+
+        self.i = self.i + (self.v[x] as u16);
         self.pc += 2;
     }
 
@@ -693,6 +703,17 @@ mod tests {
         vm.ld_st_vx();
 
         assert_eq!(vm.sound_timer, 0x7);
+        assert_eq!(vm.pc, 0x202);
+    }
+    #[test]
+    fn add_i_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA1E;
+        vm.i = 0xFA;
+        vm.v[0xA] = 0x3;
+        vm.add_i_vx();
+
+        assert_eq!(vm.i, 0xFD);
         assert_eq!(vm.pc, 0x202);
     }
 
