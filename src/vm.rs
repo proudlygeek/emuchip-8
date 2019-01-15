@@ -137,6 +137,7 @@ impl VM {
             (0xF, _, 0x1, 0xE) => self.add_i_vx(),
             (0xF, _, 0x2, 0x9) => self.ld_f_vx(),
             (0xF, _, 0x3, 0x3) => self.ld_b_vx(),
+            (0xF, _, 0x5, 0x5) => self.ld_i_vx(),
             (0xF, _, 0x6, 0x5) => self.ld_vx_i(),
             _ => self.unsupported_opcode(),
         }
@@ -232,6 +233,18 @@ impl VM {
         self.memory[self.i as usize] = self.v[vx as usize] / 100;
         self.memory[(self.i + 1) as usize] = (self.v[vx as usize] / 10) % 10;
         self.memory[(self.i + 2) as usize] = (self.v[vx as usize] % 100) % 10;
+        self.pc += 2;
+    }
+
+    fn ld_i_vx(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+
+        println!("LD [I], V{}\n", x);
+
+        for v in 0..x + 1 {
+            self.memory[(self.i + v) as usize] = self.v[v as usize]
+        }
+
         self.pc += 2;
     }
 
@@ -810,6 +823,24 @@ mod tests {
         assert_eq!(vm.memory[0x400], 0x1);
         assert_eq!(vm.memory[0x401], 0x2);
         assert_eq!(vm.memory[0x402], 0x3);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_i_vx() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xF355;
+        vm.v[0x0] = 0x1;
+        vm.v[0x1] = 0x2;
+        vm.v[0x2] = 0x3;
+        vm.v[0x3] = 0x4;
+        vm.i = 0x400;
+        vm.ld_i_vx();
+
+        assert_eq!(vm.memory[0x400], 0x1);
+        assert_eq!(vm.memory[0x401], 0x2);
+        assert_eq!(vm.memory[0x402], 0x3);
+        assert_eq!(vm.memory[0x403], 0x4);
         assert_eq!(vm.pc, 0x202);
     }
 
