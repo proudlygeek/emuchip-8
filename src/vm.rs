@@ -128,6 +128,7 @@ impl VM {
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
             (0xD, _, _, _) => self.drw_vx_vy_n(),
+            (0xE, _, 0x9, 0xE) => self.skp_vx(),
             (0xE, _, 0xA, 0x1) => self.sknp_vx(),
             (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
@@ -358,6 +359,18 @@ impl VM {
 
         self.draw_flag = true;
         self.pc += 2;
+    }
+
+    fn skp_vx(&mut self) {
+        let x = (self.opcode & 0x0F00) >> 8;
+
+        println!("SKNP V{}\n", x);
+
+        if self.key[self.v[x as usize] as usize] == true {
+            self.pc += 4;
+        } else {
+            self.pc += 2;
+        }
     }
 
     fn sknp_vx(&mut self) {
@@ -649,6 +662,28 @@ mod tests {
         assert_eq!(&vm.gfx[64..72], [1, 1, 0, 0, 0, 0, 1, 1]);
         assert_eq!(&vm.gfx[128..136], [0, 1, 1, 1, 1, 1, 1, 1]);
         assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn skp_vx_not_pressed() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xEAA1;
+        vm.v[0xA] = 0xF;
+        vm.key[0xF] = false;
+        vm.skp_vx();
+
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn skp_vx_pressed() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xEAA1;
+        vm.v[0xA] = 0xF;
+        vm.key[0xF] = true;
+        vm.skp_vx();
+
+        assert_eq!(vm.pc, 0x204);
     }
 
     #[test]
