@@ -133,6 +133,7 @@ impl VM {
             (0xE, _, 0x9, 0xE) => self.skp_vx(),
             (0xE, _, 0xA, 0x1) => self.sknp_vx(),
             (0xF, _, 0x0, 0x7) => self.ld_vx_dt(),
+            (0xF, _, 0x0, 0xA) => self.ld_vx_k(),
             (0xF, _, 0x1, 0x5) => self.ld_dt_vx(),
             (0xF, _, 0x1, 0x8) => self.ld_st_vx(),
             (0xF, _, 0x1, 0xE) => self.add_i_vx(),
@@ -430,6 +431,20 @@ impl VM {
 
         self.v[x as usize] = self.delay_timer;
         self.pc += 2;
+    }
+
+    fn ld_vx_k(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+
+        println!("LD V{}, K\n", x);
+
+        for i in 0..self.key.len() {
+            if self.key[i] == true {
+                self.v[x] = i as u8;
+                self.pc += 2;
+                break;
+            }
+        }
     }
 
     fn ld_dt_vx(&mut self) {
@@ -794,6 +809,17 @@ mod tests {
         vm.ld_vx_dt();
 
         assert_eq!(vm.v[0xA], 0x7);
+        assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn ld_vx_k() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0xFA0A;
+        vm.key[0xB] = true;
+        vm.ld_vx_k();
+
+        assert_eq!(vm.v[0xA], 0xB);
         assert_eq!(vm.pc, 0x202);
     }
 
