@@ -124,6 +124,7 @@ impl VM {
             (0x7, _, _, _) => self.add_vx_byte(),
             (0x8, _, _, 0x0) => self.ld_vx_vy(),
             (0x8, _, _, 0x2) => self.and_vx_vy(),
+            (0x8, _, _, 0x3) => self.xor_vx_vy(),
             (0x8, _, _, 0x4) => self.add_vx_vy(),
             (0x8, _, _, 0x5) => self.sub_vx_vy(),
             (0x9, _, _, 0x0) => self.sne_vx_vy(),
@@ -309,6 +310,16 @@ impl VM {
         println!("AND V{}, V{}\n", x, y);
 
         self.v[x as usize] &= self.v[y as usize];
+        self.pc += 2;
+    }
+
+    fn xor_vx_vy(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+        let y = ((self.opcode & 0x00F0) >> 4) as usize;
+
+        println!("XOR V{}, V{}\n", x, y);
+
+        self.v[x] ^= self.v[y];
         self.pc += 2;
     }
 
@@ -608,6 +619,18 @@ mod tests {
         vm.and_vx_vy();
 
         assert_eq!(vm.v[0xA], 0x2B);
+        assert_eq!(vm.pc, 0x202)
+    }
+
+    #[test]
+    fn xor_vx_vy() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8AB3;
+        vm.v[0xA] = 0x2F;
+        vm.v[0xB] = 0xAB;
+        vm.xor_vx_vy();
+
+        assert_eq!(vm.v[0xA], 0x84);
         assert_eq!(vm.pc, 0x202)
     }
 
