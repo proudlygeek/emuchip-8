@@ -128,6 +128,7 @@ impl VM {
             (0x8, _, _, 0x4) => self.add_vx_vy(),
             (0x8, _, _, 0x5) => self.sub_vx_vy(),
             (0x8, _, _, 0x6) => self.shr_vx_vy(),
+            (0x8, _, _, 0xE) => self.shl_vx_vy(),
             (0x9, _, _, 0x0) => self.sne_vx_vy(),
             (0xA, _, _, _) => self.ld_i_addr(),
             (0xC, _, _, _) => self.rnd_vx_byte(),
@@ -372,8 +373,20 @@ impl VM {
     fn shr_vx_vy(&mut self) {
         let x = ((self.opcode & 0x0F00) >> 8) as usize;
 
+        println!("SHR V{}\n", x);
+
         self.v[0xF] = self.v[x] & 0x01;
         self.v[x] >>= 1;
+        self.pc += 2;
+    }
+
+    fn shl_vx_vy(&mut self) {
+        let x = ((self.opcode & 0x0F00) >> 8) as usize;
+
+        println!("SHL V{}", x);
+
+        self.v[0xF] = (self.v[x] & 0x80) >> 7;
+        self.v[x] = (self.v[x] << 1) as u8;
         self.pc += 2;
     }
 
@@ -717,6 +730,18 @@ mod tests {
         assert_eq!(vm.v[0xF], 1);
         assert_eq!(vm.v[0xA], 0x7F);
         assert_eq!(vm.pc, 0x202);
+    }
+
+    #[test]
+    fn shl_vx_vy() {
+        let mut vm = VM::initialize(false);
+        vm.opcode = 0x8ABE;
+        vm.v[0xA] = 0xFF;
+
+        vm.shl_vx_vy();
+
+        assert_eq!(vm.v[0xF], 1);
+        assert_eq!(vm.v[0xA], 0xFE);
     }
 
     #[test]
