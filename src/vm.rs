@@ -5,7 +5,7 @@ use std::fs;
 
 pub struct VM {
     opcode: u16,            // 2 bytes opcodes
-    memory: [u8; 4096],     // 4KB of memory == 4096 bytes
+    pub memory: [u8; 4096], // 4KB of memory == 4096 bytes
     v: [u8; 16],            // 16 8-bit registers (from V0 to VE)
     i: u16,                 // Index register, 2 bytes
     pc: u16,                // Program counter, 2 bytes

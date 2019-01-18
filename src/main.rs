@@ -2,13 +2,13 @@ extern crate sdl2;
 
 mod vm;
 
-use crate::vm::VM;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use std::env;
 use std::time::Duration;
+use vm::VM;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
