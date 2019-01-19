@@ -4,9 +4,9 @@ version = "0.1.0"
 authors = ["Gianluca Bargelli <gianluca.bargelli@algolia.com>"]
 edition = "2018"
 
-
 [dependencies]
 rand = "0.6.4"
+wbg-rand = "0.4"
 wasm-bindgen = "0.2.32"
 
 [target.'cfg(target_arch = "x86_64")'.dependencies]

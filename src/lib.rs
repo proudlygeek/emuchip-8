@@ -1,37 +1,40 @@
 extern crate wasm_bindgen;
+
 mod vm;
 
 use vm::VM;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn greet(a: i32, b: i32) -> i32 {
-  a + b
+pub struct Emulator {
+  vm: vm::VM,
 }
 
 #[wasm_bindgen]
-pub struct Hello {
-  hello: String,
-  last: String,
-}
-
-#[wasm_bindgen]
-impl Hello {
-  pub fn new(name: String, last: String) -> Hello {
-    Hello {
-      hello: name,
-      last: last,
+impl Emulator {
+  pub fn new() -> Emulator {
+    Emulator {
+      vm: VM::initialize(false),
     }
   }
 
-  pub fn get_name(&self) -> String {
-    self.hello.clone()
+  pub fn load_fontset(&mut self) {
+    self.vm.load_fontset();
   }
-}
 
-#[wasm_bindgen]
-impl VM {
-  fn get_memory(&mut self) -> *const u8 {
-    self.memory.as_ptr()
+  pub fn get_memory(&mut self) -> *const u8 {
+    self.vm.memory.as_ptr()
+  }
+
+  pub fn get_gfx(&mut self) -> *const u8 {
+    self.vm.gfx.as_ptr()
+  }
+
+  pub fn tick(&mut self) {
+    self.vm.emulate_cycle();
+  }
+
+  pub fn draw_flag(&mut self) -> bool {
+    self.vm.draw_flag
   }
 }

@@ -1,6 +1,3 @@
-extern crate rand;
-
-use rand::Rng;
 use std::fs;
 
 pub struct VM {
@@ -298,7 +295,19 @@ impl VM {
     fn rnd_vx_byte(&mut self) {
         let x = (self.opcode & 0x0F00) >> 8;
         let byte = (self.opcode & 0x00FF) as u8;
-        let random_byte: u8 = rand::thread_rng().gen();
+        let random_byte: u8;
+
+        if cfg!(target_arch = "wasm32") {
+            extern crate wbg_rand;
+            use wbg_rand::{Rng, wasm_rng};
+
+            random_byte = wasm_rng().gen();
+        } else {
+            extern crate rand;
+            use rand::Rng;
+
+            random_byte = rand::thread_rng().gen();
+        }
 
         println!("RND V{}, {:X}\n", x, byte);
 
