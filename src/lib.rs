@@ -30,6 +30,10 @@ impl Emulator {
     self.vm.gfx.as_ptr()
   }
 
+  pub fn get_keys(&mut self) -> *const bool {
+    self.vm.key.as_ptr()
+  }
+
   pub fn tick(&mut self) {
     self.vm.emulate_cycle();
   }
@@ -37,4 +41,5 @@ impl Emulator {
   pub fn draw_flag(&mut self) -> bool {
     self.vm.draw_flag
   }
+
 }
