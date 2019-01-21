@@ -50,7 +50,7 @@ const initVM = () => {
 };
 
 const fetchGame = async game =>
-  fetch(`/roms/${game.toUpperCase()}`)
+  fetch(`roms/${game.toUpperCase()}`)
     .then(res => res.arrayBuffer())
     .then(buffer => {
       const rom = new DataView(buffer, 0, buffer.byteLength);
