@@ -74,14 +74,12 @@ const handleKeyUp = keyboard => {
 
 const drawGraphic = () => {
   for (let i = 0; i < WIDTH * HEIGHT; i++) {
-    const pixel = sharedDisplayBuffer[i];
-
     const x = (i % 64) * 10;
     const y = Math.floor(i / 64) * 10;
 
     ctx.fillStyle = 'rgb(0,0,0)';
 
-    if (pixel === 1) {
+    if (sharedDisplayBuffer[i] === 1) {
       ctx.fillStyle = 'rgb(255,255,255)';
     }
 
@@ -103,7 +101,7 @@ loadGame.addEventListener('change', async e => {
   await fetchGame(e.target.value);
   document.addEventListener('keydown', e => handleKeyDown(e));
   document.addEventListener('keyup', e => handleKeyUp(e));
-  runningLoop();
+  requestAnimationFrame(runningLoop);
 });
 
 initVM();
