@@ -41,4 +41,8 @@ impl Emulator {
   pub fn draw_flag(&mut self) -> bool {
     self.vm.draw_flag
   }
+
+  pub fn reset(&mut self) {
+    self.vm.reset();
+  }
 }

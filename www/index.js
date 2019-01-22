@@ -6,6 +6,7 @@ const WIDTH = 64;
 const loadGame = document.querySelector('#load-game');
 const canvas = document.querySelector('#screen');
 const ctx = canvas.getContext('2d');
+
 const keyboardMapping = {
   '1': 0x1,
   '2': 0x2,
@@ -25,6 +26,32 @@ const keyboardMapping = {
   v: 0xf
 };
 
+const gamesList = [
+  '15PUZZLE',
+  'BLINKY',
+  'BLITZ',
+  'BRIX',
+  'CONNECT4',
+  'GUESS',
+  'HIDDEN',
+  'INVADERS',
+  'KALEID',
+  'MAZE',
+  'MERLIN',
+  'MISSILE',
+  'PONG',
+  'PONG2',
+  'PUZZLE',
+  'SYZYGY',
+  'TANK',
+  'TETRIS',
+  'TICTAC',
+  'UFO',
+  'VBRIX',
+  'VERS',
+  'WIPEOFF'
+];
+
 const emu = Emulator.new();
 
 const sharedMemoryBuffer = new Uint8Array(
@@ -40,6 +67,15 @@ const sharedDisplayBuffer = new Uint8Array(
 );
 
 const sharedKeysBuffer = new Uint8Array(memory.buffer, emu.get_keys(), 16);
+
+const loadGames = () => {
+  gamesList.forEach(game => {
+    const option = document.createElement('option');
+    option.value = game;
+    option.innerText = game;
+    loadGame.appendChild(option);
+  });
+};
 
 const initVM = () => {
   canvas.height = HEIGHT * 10;
@@ -87,21 +123,33 @@ const drawGraphic = () => {
   }
 };
 
+let running = false;
 const runningLoop = () => {
-  emu.tick();
+  if (running) {
+    for (let i = 0; i < 8; i++) {
+      emu.tick();
+    }
 
-  if (emu.draw_flag) {
-    drawGraphic();
+    if (emu.draw_flag) {
+      drawGraphic();
+    }
   }
 
   requestAnimationFrame(runningLoop);
 };
 
 loadGame.addEventListener('change', async e => {
+  e.target.blur();
+  running = false;
+  emu.reset();
   await fetchGame(e.target.value);
-  document.addEventListener('keydown', e => handleKeyDown(e));
-  document.addEventListener('keyup', e => handleKeyUp(e));
-  requestAnimationFrame(runningLoop);
+  initVM();
+  running = true;
 });
 
+document.addEventListener('keydown', e => handleKeyDown(e));
+document.addEventListener('keyup', e => handleKeyUp(e));
+
+loadGames();
 initVM();
+requestAnimationFrame(runningLoop);

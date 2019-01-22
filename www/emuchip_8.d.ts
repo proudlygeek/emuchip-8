@@ -16,4 +16,6 @@ static  new(): Emulator;
 
  draw_flag(): boolean;
 
+ reset(): void;
+
 }

@@ -35,6 +35,21 @@ impl VM {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.pc = 0x200;
+        self.opcode = 0;
+        self.memory = [0; 4096];
+        self.v = [0; 16];
+        self.i = 0;
+        self.stack = [0; 16];
+        self.sp = 0;
+        self.key = [false; 16];
+        self.gfx = [0; 64 * 32];
+        self.delay_timer = 0;
+        self.sound_timer = 0;
+        self.draw_flag = false;
+    }
+
     pub fn load_game(&mut self, path: &String) {
         let buffer = fs::read(path).unwrap();
 
@@ -299,7 +314,7 @@ impl VM {
 
         if cfg!(target_arch = "wasm32") {
             extern crate wbg_rand;
-            use wbg_rand::{Rng, wasm_rng};
+            use wbg_rand::{wasm_rng, Rng};
 
             random_byte = wasm_rng().gen();
         } else {

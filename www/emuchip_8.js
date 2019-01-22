@@ -68,6 +68,12 @@ export class Emulator {
     draw_flag() {
         return (wasm.emulator_draw_flag(this.ptr)) !== 0;
     }
+    /**
+    * @returns {void}
+    */
+    reset() {
+        return wasm.emulator_reset(this.ptr);
+    }
 }
 
 const lTextDecoder = typeof TextDecoder === 'undefined' ? require('util').TextDecoder : TextDecoder;
